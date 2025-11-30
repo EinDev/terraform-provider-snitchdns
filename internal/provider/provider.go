@@ -1,8 +1,12 @@
+// Package provider implements the SnitchDNS Terraform provider.
 package provider
 
 import (
 	"context"
 	"os"
+
+	"snitchdns-tf/internal/client"
+	"snitchdns-tf/internal/testcontainer"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -10,8 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"snitchdns-tf/internal/client"
-	"snitchdns-tf/internal/testcontainer"
 )
 
 // Ensure SnitchDNSProvider satisfies various provider interfaces.
@@ -31,12 +33,12 @@ type SnitchDNSProviderModel struct {
 	APIKey string `tfsdk:"api_key"`
 }
 
-func (p *SnitchDNSProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
+func (p *SnitchDNSProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "snitchdns"
 	resp.Version = p.version
 }
 
-func (p *SnitchDNSProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+func (p *SnitchDNSProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Provider for managing SnitchDNS resources. Configure with API endpoint and authentication key.",
 		Attributes: map[string]schema.Attribute{
@@ -53,6 +55,7 @@ func (p *SnitchDNSProvider) Schema(ctx context.Context, req provider.SchemaReque
 	}
 }
 
+// Configure prepares the SnitchDNS API client for data sources and resources.
 func (p *SnitchDNSProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	var data SnitchDNSProviderModel
 

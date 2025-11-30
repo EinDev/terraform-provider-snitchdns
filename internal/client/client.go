@@ -14,6 +14,10 @@ import (
 	"time"
 )
 
+const (
+	emptyJSON = "{}"
+)
+
 // Client is the SnitchDNS API client
 type Client struct {
 	BaseURL      string
@@ -101,7 +105,7 @@ func (c *Client) doRequestWithContext(ctx context.Context, method, path string, 
 }
 
 // executeRequest performs a single HTTP request attempt
-func (c *Client) executeRequest(ctx context.Context, method, path string, jsonData []byte) ([]byte, int, error) {
+func (c *Client) executeRequest(ctx context.Context, method, path string, jsonData []byte) (respBody []byte, statusCode int, err error) {
 	var reqBody io.Reader
 	if jsonData != nil {
 		reqBody = bytes.NewBuffer(jsonData)
@@ -131,12 +135,15 @@ func (c *Client) executeRequest(ctx context.Context, method, path string, jsonDa
 		}
 	}()
 
-	respBody, err := io.ReadAll(resp.Body)
+	respBody, err = io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, resp.StatusCode, fmt.Errorf("failed to read response body: %w", err)
+		statusCode = resp.StatusCode
+		err = fmt.Errorf("failed to read response body: %w", err)
+		return
 	}
 
-	return respBody, resp.StatusCode, nil
+	statusCode = resp.StatusCode
+	return
 }
 
 // calculateBackoff calculates the backoff duration with exponential backoff and jitter
@@ -329,7 +336,7 @@ func (c *Client) CreateRecord(zoneID string, req CreateRecordRequest) (*Record, 
 	}
 
 	// Parse the conditional_data JSON string
-	if record.ConditionalDataRaw != "" && record.ConditionalDataRaw != "{}" {
+	if record.ConditionalDataRaw != "" && record.ConditionalDataRaw != emptyJSON {
 		if err := json.Unmarshal([]byte(record.ConditionalDataRaw), &record.ConditionalData); err != nil {
 			return nil, fmt.Errorf("failed to parse conditional_data field: %w", err)
 		}
@@ -339,7 +346,7 @@ func (c *Client) CreateRecord(zoneID string, req CreateRecordRequest) (*Record, 
 }
 
 // GetRecord retrieves a record by zone ID and record ID
-func (c *Client) GetRecord(zoneID string, recordID string) (*Record, error) {
+func (c *Client) GetRecord(zoneID, recordID string) (*Record, error) {
 	respBody, err := c.doRequest("GET", fmt.Sprintf("/zones/%s/records/%s", zoneID, recordID), nil)
 	if err != nil {
 		return nil, err
@@ -358,7 +365,7 @@ func (c *Client) GetRecord(zoneID string, recordID string) (*Record, error) {
 	}
 
 	// Parse the conditional_data JSON string
-	if record.ConditionalDataRaw != "" && record.ConditionalDataRaw != "{}" {
+	if record.ConditionalDataRaw != "" && record.ConditionalDataRaw != emptyJSON {
 		if err := json.Unmarshal([]byte(record.ConditionalDataRaw), &record.ConditionalData); err != nil {
 			return nil, fmt.Errorf("failed to parse conditional_data field: %w", err)
 		}
@@ -368,7 +375,7 @@ func (c *Client) GetRecord(zoneID string, recordID string) (*Record, error) {
 }
 
 // UpdateRecord updates an existing DNS record
-func (c *Client) UpdateRecord(zoneID string, recordID string, req UpdateRecordRequest) (*Record, error) {
+func (c *Client) UpdateRecord(zoneID, recordID string, req UpdateRecordRequest) (*Record, error) {
 	respBody, err := c.doRequest("POST", fmt.Sprintf("/zones/%s/records/%s", zoneID, recordID), req)
 	if err != nil {
 		return nil, err
@@ -387,7 +394,7 @@ func (c *Client) UpdateRecord(zoneID string, recordID string, req UpdateRecordRe
 	}
 
 	// Parse the conditional_data JSON string
-	if record.ConditionalDataRaw != "" && record.ConditionalDataRaw != "{}" {
+	if record.ConditionalDataRaw != "" && record.ConditionalDataRaw != emptyJSON {
 		if err := json.Unmarshal([]byte(record.ConditionalDataRaw), &record.ConditionalData); err != nil {
 			return nil, fmt.Errorf("failed to parse conditional_data field: %w", err)
 		}
@@ -397,7 +404,7 @@ func (c *Client) UpdateRecord(zoneID string, recordID string, req UpdateRecordRe
 }
 
 // DeleteRecord deletes a DNS record
-func (c *Client) DeleteRecord(zoneID string, recordID string) error {
+func (c *Client) DeleteRecord(zoneID, recordID string) error {
 	_, err := c.doRequest("DELETE", fmt.Sprintf("/zones/%s/records/%s", zoneID, recordID), nil)
 	return err
 }

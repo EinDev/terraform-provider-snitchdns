@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+const testUserAgent = "terraform-provider-snitchdns/1.0.0"
+
 // TestRetryLogic tests that the client retries on transient failures
 func TestRetryLogic(t *testing.T) {
 	attempts := atomic.Int32{}
@@ -107,15 +109,15 @@ func TestUserAgentHeader(t *testing.T) {
 	defer server.Close()
 
 	client := NewClient(server.URL, "test-key")
-	client.UserAgent = "terraform-provider-snitchdns/1.0.0"
+	client.UserAgent = testUserAgent
 
 	_, err := client.GetZone("1")
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
 
-	if capturedUserAgent != "terraform-provider-snitchdns/1.0.0" {
-		t.Errorf("Expected User-Agent to be 'terraform-provider-snitchdns/1.0.0', got '%s'", capturedUserAgent)
+	if capturedUserAgent != testUserAgent {
+		t.Errorf("Expected User-Agent to be '%s', got '%s'", testUserAgent, capturedUserAgent)
 	}
 }
 

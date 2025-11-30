@@ -47,22 +47,11 @@ jobs:
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
-      with:
-        driver-opts: |
-          image=moby/buildkit:latest
-          network=host
-
-    - name: Cache Docker layers
-      uses: actions/cache@v4
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ hashFiles('testcontainer/Dockerfile') }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-
 
     - name: Run acceptance tests
       run: |
         export TF_ACC=1
+        export DOCKER_BUILDKIT=1
         go test -v -timeout 15m -parallel 4 ./internal/provider/... -coverprofile=coverage-acceptance.txt
       env:
         TESTCONTAINERS_RYUK_DISABLED: false
@@ -111,17 +100,10 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Cache Docker layers
-      uses: actions/cache@v4
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ hashFiles('testcontainer/Dockerfile') }}
-        restore-keys: |
-          ${{ runner.os }}-buildx-
-
     - name: Run acceptance tests
       run: |
         export TF_ACC=1
+        export DOCKER_BUILDKIT=1
         go test -v -timeout 15m -parallel 4 ./internal/provider/...
       env:
         TESTCONTAINERS_RYUK_DISABLED: false
