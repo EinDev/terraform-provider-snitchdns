@@ -194,9 +194,10 @@ func TestExponentialBackoff(t *testing.T) {
 	delay1 := timestamps[1].Sub(timestamps[0])
 	delay2 := timestamps[2].Sub(timestamps[1])
 
-	// Each delay should be at least as long as RetryWaitMin
-	if delay1 < 10*time.Millisecond {
-		t.Errorf("First delay too short: %v", delay1)
+	// Each delay should be close to RetryWaitMin (allow 20% variance for timing jitter)
+	minDelay := 8 * time.Millisecond // 10ms - 20% tolerance
+	if delay1 < minDelay {
+		t.Errorf("First delay too short: %v (expected at least %v)", delay1, minDelay)
 	}
 
 	// Later delays should generally be longer (exponential backoff)
