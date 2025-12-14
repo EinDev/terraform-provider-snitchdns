@@ -52,13 +52,14 @@ func NewSnitchDNSContainer(ctx context.Context, req SnitchDNSContainerRequest) (
 		return nil, fmt.Errorf("failed to resolve dockerfile path: %w", err)
 	}
 
-	// Try to use pre-built image first (for CI), fall back to building from Dockerfile
+	// Use FromDockerfile with KeepImage which will use cached "snitchdns-test:latest"
+	// if it exists (pre-built in CI) or build from Dockerfile if not (local dev)
 	containerReq := testcontainers.ContainerRequest{
-		Image: "snitchdns-test:latest",
 		FromDockerfile: testcontainers.FromDockerfile{
-			Context:    absPath,
-			Dockerfile: "Dockerfile",
-			KeepImage:  true, // Keep image for faster subsequent runs
+			Context:       absPath,
+			Dockerfile:    "Dockerfile",
+			KeepImage:     true,  // Keep image for faster subsequent runs
+			PrintBuildLog: false, // Reduce noise in test output
 		},
 		ExposedPorts: []string{HTTPPort, DNSPort},
 		WaitingFor: wait.ForAll(
