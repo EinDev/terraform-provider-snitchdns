@@ -147,9 +147,10 @@ resource "snitchdns_record" "mx" {
 ## Requirements
 
 - **Terraform**: >= 1.0
-- **Go**: >= 1.21 (for development)
+- **Go**: >= 1.24 (for development)
 - **SnitchDNS**: Server with API access
 - **Docker**: For running tests (development only)
+- **golangci-lint**: v2.7.2 (for development)
 
 ## Obtaining an API Key
 
@@ -176,8 +177,9 @@ This provider is developed using Test-Driven Development (TDD) with testcontaine
 
 ### Prerequisites
 
-- Go 1.21 or later
+- Go 1.24 or later
 - Docker (for running testcontainers)
+- golangci-lint v2.7.2 (install with `make install-tools`)
 - Make (optional, for convenience commands)
 
 ### Running Tests
@@ -269,9 +271,9 @@ The project uses GitHub Actions for continuous integration:
 
 - Runs on every push and pull request
 - Executes all tests including integration tests
-- Checks code formatting and linting
-- Uploads coverage reports
-- Supports Go 1.21+
+- Checks code formatting and linting with golangci-lint v2.7.2
+- Uploads coverage reports to Codecov
+- Supports Go 1.24+
 
 See [`.github/workflows/`](.github/workflows/) for workflow configurations.
 

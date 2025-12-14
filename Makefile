@@ -53,4 +53,6 @@ vet:
 
 # Install development tools
 install-tools:
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	@echo "Installing golangci-lint v2.7.2..."
+	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v2.7.2
+	@echo "Development tools installed successfully"
