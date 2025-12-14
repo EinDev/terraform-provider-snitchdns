@@ -12,6 +12,7 @@ jobs:
   goreleaser:
     name: GoReleaser
     runs-on: ubuntu-latest
+    environment: Terraform-Registry
 
     steps:
     - name: Check out code
