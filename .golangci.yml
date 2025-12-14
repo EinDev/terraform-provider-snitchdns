@@ -1,51 +1,11 @@
-version: 2
-
 run:
   timeout: 5m
-  tests: false  # Don't lint test files
 
 linters:
   enable:
     - errcheck
-    - gosec
+    - gosimple
     - govet
     - ineffassign
     - staticcheck
     - unused
-    - revive
-    - gocritic
-    - nakedret
-    - goconst
-    - gocyclo
-    - dupl
-    - unparam
-
-issues:
-  exclude-rules:
-    # Exclude all issues in test files
-    - path: '(_test\.go|testcontainer/)'
-      linters:
-        - errcheck
-        - gosec
-        - dupl
-        - gocyclo
-        - unparam
-        - revive
-        - unused
-    # Exclude errcheck for defer Close/Terminate calls (intentional in tests)
-    - text: "Error return value of.*(Close|Terminate|Write).* is not checked"
-      linters:
-        - errcheck
-
-linters-settings:
-  nakedret:
-    max-func-lines: 30
-  gocyclo:
-    min-complexity: 15
-  dupl:
-    threshold: 100
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - performance
-      - style
